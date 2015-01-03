@@ -1,0 +1,1 @@
+**{{ inline.arg1|upper }}**
