@@ -22,17 +22,17 @@ def create_verbose_inline_errors(err):
     error_list = err.error_list if isinstance(err, ValidationError) else err
     for error in error_list:
         if isinstance(error, InlineSyntaxError):
-            for msg in error.messages:
-                error = InlineSyntaxError(
-                    error.lineno,
-                    _(u'Syntax error on line %(lineno)d. %(message)s'),
-                    params={'lineno': error.lineno, 'message': msg})
-                errors.append(error)
+            error_class = InlineSyntaxError
+            msg_template = _(u'Syntax error on line %(lineno)d. %(message)s')
         elif isinstance(error, InlineValidationError):
-            for msg in error.messages:
-                error = InlineValidationError(
-                    error.lineno,
-                    _(u'Inline error on line %(lineno)d. %(message)s'),
-                    params={'lineno': error.lineno, 'message': msg})
-                errors.append(error)
+            error_class = InlineValidationError
+            msg_template = _(u'Inline error on line %(lineno)d. %(message)s')
+
+        for msg in error.messages:
+            error = error_class(
+                error.lineno,
+                msg_template,
+                params={'lineno': error.lineno, 'message': msg})
+            errors.append(error)
+
     return ValidationError(errors)
