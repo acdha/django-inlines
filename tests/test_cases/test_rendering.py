@@ -5,6 +5,14 @@ except ImportError:
     # Python 3
     from itertools import zip_longest
 
+try:
+    from unittest.mock import patch
+except ImportError:
+    try:
+        from mock import patch
+    except ImportError:
+        raise RuntimeError('Please install mock for testing on Python 2')
+
 from django.core.exceptions import ValidationError
 
 from django_inlines import registry, renderer
@@ -98,6 +106,11 @@ class RendererTestCase(InlinesTestCase):
         registry.register('none', BasicInlineParent)
         self.assertEqual(u'', renderer.render('{{ echo }}', log_errors=False))
         self.assertEqual(u'', renderer.render('{{ none }}', log_errors=False))
+
+    def test_exception_logging(self):
+        with patch('django_inlines.rendering.logger.exception') as mock_log:
+            self.assertEqual(u'', renderer.render('{{ echo:no-such-variant }}', log_errors=True))
+            self.assertTrue(mock_log.called)
 
     def test_media(self):
         registry.unregister('echo')
